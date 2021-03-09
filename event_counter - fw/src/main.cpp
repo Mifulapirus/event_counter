@@ -21,9 +21,10 @@
 #include <ArduinoOTA.h>
 #include <Config.h>
 
+#define BUTTON_1_PIN D1
+#define BUTTON_2_PIN D2
 
 const char *configPath = "/config.json";  
-
 const char compile_date[] = __DATE__ " " __TIME__;
 
 // The ID below comes from Google Sheets.
@@ -37,16 +38,16 @@ HTTPSRedirect client(httpsPort);
 
 // Prepare the url (without the varying data)
 String url = String("/macros/s/") + GScriptId + "/exec?";
-
 const char* fingerprint = "F0 5C 74 77 3F 6B 25 D7 3B 66 4D 43 2F 7E BC 5B E9 28 86 AD";
 
 // This is the main method where data gets pushed to the Google sheet
-void postData(String tag, int value){
+void postData(String deviceID, String tag, int value, float bat){
     if (!client.connected()){
             Serial.println("Connecting to client again…");
             client.connect(host, httpsPort);
     }
-    String urlFinal = url + "tag=" + tag + "&value=" + String(value);
+    String urlFinal = url + "deviceID=" + deviceID + "&tag=" + tag + "&value=" + String(value) + "&bat=" + String(bat);
+    Serial.println(urlFinal);
     client.GET(urlFinal, host, googleRedirHost);
 }
 
@@ -55,6 +56,9 @@ void postData(String tag, int value){
  **/
 void setup() {
   Serial.begin(115200);
+  pinMode(BUTTON_1_PIN, INPUT_PULLUP);
+  pinMode(BUTTON_2_PIN, INPUT_PULLUP);
+
   //Mount File system
   if (initLogger(true)) logger("\nFS mounted at setup");
   else logger("Error mounting FS at setup");
@@ -138,4 +142,16 @@ void setup() {
 
 void loop() {
   ArduinoOTA.handle();
+  //check buttons
+  if(!digitalRead(BUTTON_1_PIN)){
+    logger("Button 1 Has been pushed");
+    postData(config.device_name, config.but_1_tag, 1, 0.12);
+    delay(100);
+  }
+  if(!digitalRead(BUTTON_2_PIN)){
+    logger("Button 2 Has been pushed");
+    postData(config.device_name, config.but_2_tag, 1, 0.13);
+    delay(100);
+  }
+
 }

@@ -25,6 +25,9 @@ struct Config {
   char ap_gateway[20] = "10.0.1.1";
   char ap_mask[20] = "255.255.255.0";
   const char compilation_date[30] = __DATE__ " + " __TIME__;
+
+  char but_1_tag[20] = "no_tag";
+  char but_2_tag[20] = "no_tag";
 };
 
 Config config;                         //Create global configuration object
@@ -70,6 +73,9 @@ void loadConfiguration(const char *filename, Config &config) {
     strlcpy(config.ap_ip, doc["ap_ip"] | "10.0.1.1", sizeof(config.ap_ip));  
     strlcpy(config.ap_gateway, doc["ap_gateway"] | "10.0.1.1", sizeof(config.ap_gateway));  
     strlcpy(config.ap_mask, doc["ap_path"] | "255.255.255.0", sizeof(config.ap_mask));  
+
+    strlcpy(config.but_1_tag, doc["but_1_tag"] | "B1", sizeof(config.but_1_tag));
+    strlcpy(config.but_2_tag, doc["but_2_tag"] | "B2", sizeof(config.but_2_tag));  
 }
 
 void OTAsetup(){
