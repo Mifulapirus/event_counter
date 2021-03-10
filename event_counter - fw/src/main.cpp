@@ -21,8 +21,12 @@
 #include <ArduinoOTA.h>
 #include <Config.h>
 
-#define BUTTON_1_PIN D1
-#define BUTTON_2_PIN D2
+#define BUTTON_1_PIN  D1
+#define BUTTON_2_PIN  D5
+#define BLUE_LED      D4
+
+unsigned long LED_TIMER = 5000;
+unsigned long lastLedTrigger = 0;
 
 const char *configPath = "/config.json";  
 const char compile_date[] = __DATE__ " " __TIME__;
@@ -42,13 +46,14 @@ const char* fingerprint = "F0 5C 74 77 3F 6B 25 D7 3B 66 4D 43 2F 7E BC 5B E9 28
 
 // This is the main method where data gets pushed to the Google sheet
 void postData(String deviceID, String tag, int value, float bat){
+    digitalWrite(BLUE_LED, LOW);
     if (!client.connected()){
             Serial.println("Connecting to client again…");
             client.connect(host, httpsPort);
     }
     String urlFinal = url + "deviceID=" + deviceID + "&tag=" + tag + "&value=" + String(value) + "&bat=" + String(bat);
     Serial.println(urlFinal);
-    client.GET(urlFinal, host, googleRedirHost);
+    if(client.GET(urlFinal, host, googleRedirHost)) digitalWrite(BLUE_LED, HIGH);
 }
 
 /**
@@ -58,6 +63,7 @@ void setup() {
   Serial.begin(115200);
   pinMode(BUTTON_1_PIN, INPUT_PULLUP);
   pinMode(BUTTON_2_PIN, INPUT_PULLUP);
+  pinMode(BLUE_LED, OUTPUT);
 
   //Mount File system
   if (initLogger(true)) logger("\nFS mounted at setup");
@@ -130,12 +136,13 @@ void setup() {
   }
 
   // Data will still be pushed even certification don’t match.
-  if (client.verify(fingerprint, host)) {
-    Serial.println("Certificate match.");
-  } 
-  else {
-    Serial.println("Certificate mis-match");
+  if (client.verify(fingerprint, host)) Serial.println("Certificate match."); 
+  else Serial.println("Certificate mis-match");
+  for (int i = 0; i < 4; i++) {
+    digitalWrite(BLUE_LED, !digitalRead(D4));
+    delay(100);
   }
+  digitalWrite(BLUE_LED, HIGH);
 
   logger("-------Setup Finished-------");
 }
@@ -145,13 +152,20 @@ void loop() {
   //check buttons
   if(!digitalRead(BUTTON_1_PIN)){
     logger("Button 1 Has been pushed");
-    postData(config.device_name, config.but_1_tag, 1, 0.12);
+    postData(config.device_name, config.but_1_tag, 1, 1);
     delay(100);
   }
   if(!digitalRead(BUTTON_2_PIN)){
     logger("Button 2 Has been pushed");
-    postData(config.device_name, config.but_2_tag, 1, 0.13);
+    postData(config.device_name, config.but_2_tag, 1, 1);
     delay(100);
   }
-
+  if (millis()-lastLedTrigger > LED_TIMER) {
+    if (client.connected()) {LED_TIMER = 5000;}
+    else {LED_TIMER = 200;}
+    digitalWrite(BLUE_LED, LOW);
+    delay(10);
+    lastLedTrigger = millis();
+    digitalWrite(BLUE_LED, HIGH);
+  }
 }
