@@ -20,14 +20,15 @@ struct Config {
   bool using_congfig_file;
   char version[8] = __VERSION__;
   char ap_ssid[64] = "ESP WiFi";
-  char device_name[20] = "ESP thing";
+  String device_name = "ESP thing";
   char ap_ip[20] = "10.0.1.1";
   char ap_gateway[20] = "10.0.1.1";
   char ap_mask[20] = "255.255.255.0";
   const char compilation_date[30] = __DATE__ " + " __TIME__;
 
-  char but_1_tag[20] = "no_tag";
-  char but_2_tag[20] = "no_tag";
+  String gScript_id = "";
+  String but_1_tag = "no_tag";
+  String but_2_tag = "no_tag";
 };
 
 Config config;                         //Create global configuration object
@@ -61,26 +62,28 @@ void loadConfiguration(const char *filename, Config &config) {
 
     // Deserialize the JSON document
     DeserializationError error = deserializeJson(doc, file);
-    if (error)
-        logger(F("Failed to read config file, using default configuration"));
+    if (error) logger(F("Failed to read config file, using default configuration"));
 
     // Copy values from the JsonDocument to the Config
     strlcpy(config.version,           // <- destination
             doc["version"] | "0.0",   // <- source
             sizeof(config.version));  // <- destination's capacity
-    strlcpy(config.device_name, doc["device_name"] | "No Name (Default)", sizeof(config.device_name));          
+    config.device_name = doc["device_name"] | "No Name (Default)";
     strlcpy(config.ap_ssid, doc["ap_ssid"] | "ESP Thing (Default)", sizeof(config.ap_ssid));  
     strlcpy(config.ap_ip, doc["ap_ip"] | "10.0.1.1", sizeof(config.ap_ip));  
     strlcpy(config.ap_gateway, doc["ap_gateway"] | "10.0.1.1", sizeof(config.ap_gateway));  
     strlcpy(config.ap_mask, doc["ap_path"] | "255.255.255.0", sizeof(config.ap_mask));  
 
-    strlcpy(config.but_1_tag, doc["button_1_tag"] | "B1", sizeof(config.but_1_tag));
-    strlcpy(config.but_2_tag, doc["button_2_tag"] | "B2", sizeof(config.but_2_tag));  
+    config.gScript_id = doc["gscript_ID"] | "";
+    config.but_1_tag = doc["button_1_tag"] | "B1";
+    config.but_2_tag = doc["button_2_tag"] | "B2";
 }
 
 void OTAsetup(){
-    ArduinoOTA.setHostname(config.device_name);
-    logger("  Hostname: " + ArduinoOTA.getHostname());
+    char deviceNameChar[30];
+    config.device_name.toCharArray(deviceNameChar, sizeof(deviceNameChar));
+    ArduinoOTA.setHostname(deviceNameChar);
+    logger("  OTA Hostname: " + ArduinoOTA.getHostname());
 
     ArduinoOTA.onStart([]() {logger("\n*************************\n****** OTA STARTED ******");});
     ArduinoOTA.onEnd([]() {logger("\n*************************\n****** OTA FINISHED ******");});

@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Event Logger</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="icon" href="data:,">
+  <link rel="stylesheet" type="text/css" href="style.css">
+</head>
+<body>
+  <h1>Event Logger V.%FW_VERSION%</h1>
+  <h2>Setup</h2>
+  <strong>Device IP: </strong> %IP% <br>
+  <strong>Name: </strong> %DEVICE_NAME% <br>
+  <br>
+  <form action="/setButton">
+    Button 1: <input type="text" name="but_1" data-lpignore="true" placeholder=%BUT_1_NAME% pattern="[A-Za-z0-9_-.]{2,}" title="2 or more characters.">
+    <input class="button" type="submit" value="Set button name">
+  </form>
+  
+  <form action="/setButton">
+    Button 2: <input type="text" name="but_2" data-lpignore="true" placeholder=%BUT_2_NAME% pattern="[A-Za-z0-9_-.]{2,}" title="2 or more characters.">
+    <input class="button" type="submit" value="Set button name">
+  </form>
+
+  <hr>
+  <form action="/setDeviceName">
+    Google Device Name: <input type="text" name="device_name" data-lpignore="true" placeholder=%DEVICE_NAME%>
+    <input class="button" type="submit" value="Set Device Name">
+  </form>
+
+  <form action="/setGscriptID">
+    Google Script ID: <input type="text" name="gscriptID" data-lpignore="true" placeholder=%G_SCRIPT_STATUS%>
+    <input class="button" type="submit" value="Set gScript ID">
+  </form>
+
+  <a href="https://docs.google.com/spreadsheets/d/1scdVvuxf8SpTsXHk1wdeFqiRcs-pyiiKIOYRuOwsPNw/edit#gid=0" target="_blank" rel="noopener noreferrer">Event Logger Sheet</a>
+
+  
+</body>
+</html>

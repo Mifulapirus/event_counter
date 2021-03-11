@@ -1,0 +1,15 @@
+{
+    "using_congfig_file":true,
+    "device_id":0,
+    "device_name":"DEVICE_NAME",
+
+    "version":"0.1",
+    "ap_ssid":"Event Counter",
+    "ap_ip":"10.0.1.1",
+    "ap_gateway":"10.0.1.1",
+    "ap_mask":"255.255.255.0", 
+
+    "gscript_ID":"XXXXXXXXXXXXXXXXXX",
+    "button_1_tag":"Button_1",
+    "button_2_tag":"Button_2"
+}
