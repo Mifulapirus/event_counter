@@ -33,8 +33,6 @@ const char compile_date[] = __DATE__ " " __TIME__;
 
 // The ID below comes from Google Sheets.
 // Towards the bottom of this page, it will explain how this can be obtained
-//https://script.google.com/macros/s/AKfycbz6JCyGbPDGMm7WRX6xyR1hZJiI9wRnIfUh5r69cYs7asQfy46fzqBjWrKHaHXGapjKiA/exec
-//const char *GScriptId = "AKfycbz6JCyGbPDGMm7WRX6xyR1hZJiI9wRnIfUh5r69cYs7asQfy46fzqBjWrKHaHXGapjKiA";
 const char* host = "script.google.com";
 const char* googleRedirHost = "script.googleusercontent.com";
 const int httpsPort =     443;
