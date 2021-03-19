@@ -3,15 +3,16 @@
     "device_id":0,
     "device_name":"DEVICE_NAME",
 
-    "version":"0.1",
+    "version":"0.2",
     "ap_ssid":"Event Counter",
     "ap_ip":"10.0.1.1",
     "ap_gateway":"10.0.1.1",
     "ap_mask":"255.255.255.0", 
 
-    "gscript_ID":"XXXXXXXXXXXXXXXXXX",
+    "gscript_ID":"XXXXXXXXXXXXXX",
+    "google_sheet_link":"YYYYYYYYYYYYY",
     "button_1_tag":"Button_1",
-    "button_2_tag":"Button_2",
+    "button_2_tag":"Button_2", 
     "button_single_tag":"WAKE_UP",
-    "sleep_mode":true
+    "sleep_mode":false
 }
