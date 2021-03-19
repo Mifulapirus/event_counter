@@ -27,8 +27,11 @@ struct Config {
   const char compilation_date[30] = __DATE__ " + " __TIME__;
 
   String gScript_id = "";
+  String gSheetLink = "";
   String but_1_tag = "no_tag";
   String but_2_tag = "no_tag";
+  String but_single_tag = "no tag";
+  bool sleep_mode = false;
 };
 
 Config config;                         //Create global configuration object
@@ -58,7 +61,7 @@ void printConfigFile(const char *filename) {
  **/
 void loadConfiguration(const char *filename, Config &config) {
     File file = SPIFFS.open(filename, "r");
-    StaticJsonDocument<512> doc;
+    StaticJsonDocument<1024> doc;
 
     // Deserialize the JSON document
     DeserializationError error = deserializeJson(doc, file);
@@ -75,8 +78,11 @@ void loadConfiguration(const char *filename, Config &config) {
     strlcpy(config.ap_mask, doc["ap_path"] | "255.255.255.0", sizeof(config.ap_mask));  
 
     config.gScript_id = doc["gscript_ID"] | "";
+    config.gSheetLink = doc["google_sheet_link"] | "";
     config.but_1_tag = doc["button_1_tag"] | "B1";
     config.but_2_tag = doc["button_2_tag"] | "B2";
+    config.but_single_tag = doc["button_single_tag"] | "Wake_Up";
+    config.sleep_mode = doc["sleep_mode"] | false;
 }
 
 void OTAsetup(){

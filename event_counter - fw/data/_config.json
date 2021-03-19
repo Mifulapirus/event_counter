@@ -11,5 +11,7 @@
 
     "gscript_ID":"XXXXXXXXXXXXXXXXXX",
     "button_1_tag":"Button_1",
-    "button_2_tag":"Button_2"
+    "button_2_tag":"Button_2",
+    "button_single_tag":"WAKE_UP",
+    "sleep_mode":true
 }

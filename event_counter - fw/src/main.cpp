@@ -39,10 +39,14 @@ const int httpsPort =     443;
 HTTPSRedirect client(httpsPort);
 
 String url = String("/macros/s/") + config.gScript_id + "/exec?"; //default url
-const char* fingerprint = "F0 5C 74 77 3F 6B 25 D7 3B 66 4D 43 2F 7E BC 5B E9 28 86 AD";
+// const char* fingerprint = "F0 5C 74 77 3F 6B 25 D7 3B 66 4D 43 2F 7E BC 5B E9 28 86 AD";
+const char* fingerprint = "AB CD EF 01 23 45 67 D7 3B 66 4D 43 2F 7E BC 5B E9 28 86 AD";
 
 //Web Server 
 AsyncWebServer server(80);
+
+//Wake up Reason
+String wakeUpReason = "";
 
 /** Rebuilds URL with the gScript ID from the config file */ 
 void setUrl(){
@@ -63,13 +67,37 @@ void saveGscriptID(String newGscriptID){
 
   //Read current config file
   File file = SPIFFS.open(configPath, "r");
-  StaticJsonDocument<512> doc;
+  StaticJsonDocument<1024> doc;
   // Deserialize the JSON document
   DeserializationError error = deserializeJson(doc, file);
   if (error) logger(F(" Failed to read config file, using default configuration"));
   file.close();
 
   doc["gscript_ID"] = config.gScript_id;
+  //Save document to file
+  if (!initFS()) {logger("  FS not mounted properly"); return;}
+  file = SPIFFS.open(configPath, "w");
+  if (!file) {logger("  Error, Can't create file"); return;}
+
+  serializeJson(doc, file);
+  logger("  Config file saved correctly with name " + String(file.name()));
+  file.close();
+}
+
+/** Saves Google Sheet link in memory */
+void saveGoogleSheetLink(String newGsheetLink){
+  config.gSheetLink = newGsheetLink;
+  logger("Saving Google Sheet Link to memory " + config.gSheetLink);
+
+  //Read current config file
+  File file = SPIFFS.open(configPath, "r");
+  StaticJsonDocument<1024> doc;
+  // Deserialize the JSON document
+  DeserializationError error = deserializeJson(doc, file);
+  if (error) logger(F(" Failed to read config file, using default configuration"));
+  file.close();
+
+  doc["google_sheet_link"] = config.gSheetLink;
   //Save document to file
   if (!initFS()) {logger("  FS not mounted properly"); return;}
   file = SPIFFS.open(configPath, "w");
@@ -146,6 +174,7 @@ String webProcessor(const String& var){
   if(var == "FW_VERSION") return config.version;
   if(var == "BUT_1_NAME") return String("\"" + config.but_1_tag + "\"");
   if(var == "BUT_2_NAME") return String("\"" + config.but_2_tag + "\"");
+  if(var == "GOOGLE_SHEET_LINK") return String("\"" + config.gSheetLink + "\"");
   if(var == "IP") return WiFi.localIP().toString();
   if(var == "DEVICE_NAME") return String(config.device_name);
 
@@ -187,6 +216,10 @@ void setup() {
   pinMode(BUTTON_1_PIN, INPUT_PULLUP);
   pinMode(BUTTON_2_PIN, INPUT_PULLUP);
   pinMode(BLUE_LED, OUTPUT);
+
+  wakeUpReason = ESP.getResetReason();
+  Serial.print("\n\n");
+  Serial.println("Wakeup reason: " + wakeUpReason);
 
   //Mount File system
   if (initLogger(true)) logger("\nFS mounted at setup");
@@ -232,7 +265,9 @@ void setup() {
   logger("  Hardware MAC: " + String(WiFi.macAddress()));
   logger("  Software MAC: " + WiFi.softAPmacAddress());
   logger("  IP: " + WiFi.localIP().toString());  
-  logger("  G Script ID: " + config.gScript_id);  
+  logger("  Google Script ID: " + config.gScript_id);  
+  logger("  Google Sheet: " + config.gSheetLink);  
+  logger("  Sleep Mode: " + String(config.sleep_mode));
   OTAsetup();  
 
   logger("\n| Initiate TLS connection");
@@ -290,6 +325,11 @@ void setup() {
     }
     request->send(SPIFFS, "/index.html", String(), false, webProcessor);
   });
+  server.on("/setGsheetLink", HTTP_GET, [](AsyncWebServerRequest *request){
+    if (request->hasParam("gSheetLink")) {saveGoogleSheetLink(request->getParam("gSheetLink")->value());}
+    request->send(SPIFFS, "/index.html", String(), false, webProcessor);
+  });
+
   server.on("/setDeviceName", HTTP_GET, [](AsyncWebServerRequest *request){
     if (request->hasParam("device_name")) {
       config.device_name = request->getParam("device_name")->value();
@@ -308,6 +348,20 @@ void setup() {
 }
 
 void loop() {
+  if(config.sleep_mode) {
+    Serial.println(ESP.getResetInfoPtr()->reason);
+    Serial.println(REASON_DEEP_SLEEP_AWAKE);
+    if(ESP.getResetInfoPtr()->reason == REASON_DEEP_SLEEP_AWAKE){
+      logger("Woke up from deep sleep. Posting data...");
+      float v_bat = analogRead(A0); 
+      logger("Battery: " + String(v_bat));
+      postData(config.device_name, config.but_single_tag, 1, v_bat);
+    }
+    logger("Going back to sleep");
+    ESP.deepSleep(0);
+  }
+
+
   ArduinoOTA.handle();
   //check buttons
   if(!digitalRead(BUTTON_1_PIN)){
@@ -329,4 +383,5 @@ void loop() {
     lastLedTrigger = millis();
     digitalWrite(BLUE_LED, HIGH);
   }
+  
 }
