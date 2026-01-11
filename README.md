@@ -57,7 +57,7 @@ See the header comments in `event_counter.gs` for step-by-step setup instruction
 
 ## Repository structure
 
-'''
+```
 event_counter/
 ├── event_counter-fw/ # Firmware for the WEMOS D1 Mini
 ├── event_counter-hw/ # Hardware design files
@@ -65,7 +65,7 @@ event_counter/
 │ └── event_counter.gs # Google Apps Script Web App
 ├── pictures/ # Device photos
 └── README.md
-'''
+```
 
 ---
 
